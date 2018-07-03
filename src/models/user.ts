@@ -1,28 +1,36 @@
-import { model, property, Entity } from "@loopback/repository";
+import {Entity, property, model} from '@loopback/repository';
+
+@model()
 export class User extends Entity {
   @property({
-    type: "number",
-    id: true
+    type: 'number',
+    id: true,
   })
-  id: number;
+  id?: number;
 
   @property({
-    type: "string"
+    type: 'string',
   })
-  name: string;
+  firstname: number;
 
   @property({
-    type: "string"
+    type: 'string',
   })
-  surname: string;
+  lastname: number;
 
   @property({
-    type: "string"
+    type: 'string',
+    required: true,
   })
   email: string;
 
   @property({
-    type: "string"
+    type: 'string',
+    required: true,
   })
   password: string;
+
+  getId() {
+    return this.id;
+  }
 }

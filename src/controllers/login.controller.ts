@@ -1,23 +1,32 @@
-import { Request, RestBindings, HttpErrors, get, param } from '@loopback/rest';
-import { inject } from '@loopback/context';
-import { repository } from '@loopback/repository';
-import { UserRepository } from '../repositories/user.repository';
-import { User } from '../models/user';
-// Uncomment these imports to begin using these cool features!
+import {repository} from '@loopback/repository';
 
-// import {inject} from '@loopback/context';
-
-
+import {HttpErrors, post, requestBody} from '@loopback/rest';
+import {UserRepository} from '../repositories/user.repository';
+import {User} from '../models/user';
 
 export class LoginController {
-  constructor(@repository(UserRepository.name) private userRepo: UserRepository) { }
+  constructor(@repository(UserRepository) protected userRepo: UserRepository) {}
 
-  // Map to `GET /ping`
-  @get('/login')
+  @post('/login')
+  async loginUser(@requestBody() user: User): Promise<User | null> {
+    // Check that email and password are both supplied
+    if (!user.email || !user.password) {
+      throw new HttpErrors.Unauthorized('invalid credentials');
+    }
 
-  async login(@param.query.string('email') email: string, @param.query.string('password') password: string): Promise<User[]> {
+    // Check that email and password are valid
+    let userExists: boolean = !!(await this.userRepo.count({
+      and: [{email: user.email}, {password: user.password}],
+    }));
 
-    return await this.userRepo.find();
+    if (!userExists) {
+      throw new HttpErrors.Unauthorized('invalid credentials');
+    }
+
+    return await this.userRepo.findOne({
+      where: {
+        and: [{email: user.email}, {password: user.password}],
+      },
+    });
   }
 }
-
